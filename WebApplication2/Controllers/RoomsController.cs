@@ -77,13 +77,38 @@ namespace WebApplication2.Controllers
             return NoContent();
         }
 
-        // Belirli bir otel için odaları listeleme
-        [HttpGet("hotel/{hotel_id}")]
-        public IActionResult GetRoomsByHotel(int hotel_id)
+        [HttpGet("hotel/{hotelId}")]
+        public async Task<IActionResult> GetRoomsByHotel(int hotelId)
         {
-            var rooms = _context.rooms.Where(r => r.hotel_id == hotel_id && !r.deleted).ToList();
+            var rooms = await _context.rooms
+                .Where(r => r.hotel_id == hotelId && !r.deleted) // Otel ID'sine ve silinmiş olmayanlara göre filtrele
+                .Include(r => r.roomType) // Oda tipini dahil et
+                .Select(r => new
+                {
+                    r.id,
+                    r.hotel_id,
+                    r.room_type_id,
+                    r.base_price,
+                    r.status,
+                    RoomType = r.roomType != null ? new
+                    {
+                        r.roomType.name,
+                        r.roomType.description,
+                        r.roomType.image_url
+                    } : null
+                })
+                .ToListAsync();
+
+            if (rooms == null || !rooms.Any())
+            {
+                return NotFound("No rooms found for the given hotel.");
+            }
+
             return Ok(rooms);
         }
+
+
+
 
         // Tek bir odayı alma
         [HttpGet("{id}")]
@@ -94,6 +119,22 @@ namespace WebApplication2.Controllers
             {
                 return NotFound();
             }
+            return Ok(room);
+        }
+
+        // Otel ID'sine ve oda ID'sine göre oda bilgilerini al
+        [HttpGet("hotel/{hotelId}/room/{roomId}")]
+        public IActionResult GetRoomByHotelAndRoomId(int hotelId, int roomId)
+        {
+            var room = _context.rooms
+                .Where(r => r.hotel_id == hotelId && r.id == roomId)    
+                .FirstOrDefault();
+
+            if (room == null)
+            {
+                return NotFound($"Otel ID {hotelId} ve Oda ID {roomId} ile eşleşen oda bulunamadı.");
+            }
+
             return Ok(room);
         }
     }

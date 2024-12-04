@@ -17,5 +17,7 @@ namespace WebApplication2
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         public DateTime updated_at { get; set; } = DateTime.UtcNow;
         public bool deleted { get; set; } = false;
+
+
     }
 }

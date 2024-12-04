@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using WebApplication2;
 
 public class Users
 {
@@ -16,4 +18,7 @@ public class Users
     public DateTime created_at { get; set; } = DateTime.UtcNow;
     public DateTime updated_at { get; set; } = DateTime.UtcNow;
     public bool deleted { get; set; } = false;
+
+    [JsonIgnore]
+    public virtual ICollection<SupportRequest> SupportRequests { get; set; }
 }

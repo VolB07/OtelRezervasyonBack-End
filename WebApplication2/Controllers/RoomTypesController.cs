@@ -17,6 +17,7 @@ namespace WebApplication2.Controllers
             _context = context;
         }
 
+
         [HttpGet]
         public async Task<IActionResult> GetRoomTypes()
         {
@@ -33,6 +34,18 @@ namespace WebApplication2.Controllers
             return Ok(roomTypes);
         }
 
+        [HttpGet("{id}")]
+        public IActionResult GetRoomTypeById(int id)
+        {
+            var roomType = _context.roomtypes.FirstOrDefault(rt => rt.id == id && !rt.deleted);
+            if (roomType == null)
+            {
+                return NotFound();
+            }
+            return Ok(roomType);
+        }
     }
 
 }
+
+        

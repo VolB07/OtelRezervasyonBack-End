@@ -17,6 +17,26 @@ namespace WebApplication2.Controllers
             _context = context;
         }
 
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetFilteredHotels([FromBody] HotelFilterModel filter)
+        {
+            var query = _context.Hotels.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filter.address))
+            {
+                query = query.Where(h => h.address.Contains(filter.address));
+            }
+            if (filter.star_rating.HasValue)
+            {
+                query = query.Where(h => h.star_rating == filter.star_rating);
+            }
+
+            var hotels = await query.ToListAsync();
+            return Ok(hotels);
+        }
+
+
+
         // GET: api/Hotels - Tüm otelleri getir
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Hotels>>> GetHotels()

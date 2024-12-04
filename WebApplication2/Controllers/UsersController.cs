@@ -19,33 +19,7 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
-    [HttpGet("current")]
-    [Authorize] // Bu uç noktaya erişim için kimlik doğrulama gerektirir
-    public async Task<ActionResult<Users>> GetCurrentUser()
-    {
-        // Giriş yapan kullanıcının e-posta adresini alın
-        var userEmail = HttpContext.User.Identity.Name; // Kullanıcı adı olarak e-posta adresini kullanıyorsanız
 
-        if (string.IsNullOrEmpty(userEmail))
-        {
-            return Unauthorized(new { message = "Kullanıcı bulunamadı." });
-        }
-
-        // Kullanıcıyı veritabanından al
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.email == userEmail);
-        if (user == null)
-        {
-            return NotFound(new { message = "Kullanıcı bulunamadı." });
-        }
-
-        return Ok(new
-        {
-            user.name,
-            user.email,
-            user.phone,
-            user.gender
-        });
-    }
 
 
     // GET api/users
@@ -101,7 +75,18 @@ public class UsersController : ControllerBase
                 return Unauthorized(new { message = "Geçersiz e-posta veya şifre." });
             }
 
-            return Ok(new { message = "Giriş başarılı." });
+            // Kullanıcı bilgilerini al (örneğin, kullanıcı ID'si)
+            var user = _userService.GetUserByEmail(loginModel.Email);
+
+            // JWT token oluştur
+            var token = _userService.GenerateJwtToken(loginModel.Email);
+
+            return Ok(new
+            {
+                message = "Giriş başarılı.",
+                token = token,
+                userId = user?.id // Kullanıcı ID'sini yanıtla birlikte gönder
+            });
         }
         catch (Exception ex)
         {
@@ -110,11 +95,30 @@ public class UsersController : ControllerBase
         }
     }
 
+
+
+
+
     public class LoginModel
     {
         public string Email { get; set; }
         public string Password { get; set; }
     }
 
+    // GET: api/Users/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUserById(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
 
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        return Ok(user);
+    }
 }
+
+
+

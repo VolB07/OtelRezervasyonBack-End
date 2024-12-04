@@ -2,12 +2,17 @@
 using System.Linq;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 public interface IUserService
 {
     void AddUser(Users user);
     Users GetUserByEmail(string email);
     bool ValidateUser(string email, string password);
+    string GenerateJwtToken(string email);
 }
 
 public class UserService : IUserService
@@ -97,7 +102,51 @@ public class UserService : IUserService
         string storedPassword = System.Text.Encoding.UTF8.GetString(decodedBytes);
         return inputPassword == storedPassword;
     }
-    public Users Login(string email, string password)
+
+
+
+public static string GenerateSecureKey(int length = 32)
+{
+    using (var rng = new RNGCryptoServiceProvider())
+    {
+        var key = new byte[length];
+        rng.GetBytes(key);
+        return Convert.ToBase64String(key); // Anahtar base64 formatında döndürülür
+    }
+}
+
+
+    public string GenerateJwtToken(string email)
+    {
+        var secretKey = GenerateSecureKey();  // 256 bitlik anahtar (32 byte)
+
+        // Anahtarın uzunluğunun yeterli olduğundan emin olun (256 bit)
+        if (secretKey.Length < 32)
+        {
+            throw new ArgumentException("Anahtarın boyutu 256 bit olmalıdır.", nameof(secretKey));
+        }
+
+        var securityKey = new SymmetricSecurityKey(Convert.FromBase64String(secretKey));  // Anahtarı 256 bit olarak kullanıyoruz
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[] {
+        new Claim(JwtRegisteredClaimNames.Sub, email),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.Email, email)
+    };
+
+        var token = new JwtSecurityToken(
+            issuer: "YourApp",
+            audience: "YourAppUsers",
+            claims: claims,
+            expires: DateTime.Now.AddHours(1),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+
+    public string Login(string email, string password)
     {
         var user = GetUserByEmail(email); // E-posta ile kullanıcıyı bul
 
@@ -106,6 +155,7 @@ public class UserService : IUserService
             throw new Exception("Geçersiz e-posta veya şifre.");
         }
 
-        return user; // Giriş başarılı
+        // Kullanıcı doğrulandı, token üret ve döndür
+        return GenerateJwtToken(user.email);
     }
 }
