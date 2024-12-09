@@ -28,6 +28,24 @@ namespace WebApplication2.Controllers
                                  .ToListAsync();
         }
 
+        // GET: api/SupportRequests/User/{userId}
+        [HttpGet("User/{userId}")]
+        public async Task<ActionResult<IEnumerable<SupportRequest>>> GetUserSupportRequests(int userId)
+        {
+            // Kullanıcının taleplerini al
+            var userRequests = await _context.SupportRequests
+                                              .Where(sr => sr.user_id == userId)
+                                              .OrderByDescending(sr => sr.created_at) // Tarihe göre sıralama
+                                              .ToListAsync();
+
+            if (userRequests == null || !userRequests.Any())
+            {
+                return NotFound("Bu kullanıcıya ait destek talebi bulunamadı.");
+            }
+
+            return Ok(userRequests);
+        }
+
         // GET: api/SupportRequests/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<SupportRequest>> GetSupportRequest(int id)
@@ -45,32 +63,44 @@ namespace WebApplication2.Controllers
         }
 
         // POST: api/SupportRequests
-[HttpPost]
-public async Task<ActionResult<SupportRequest>> CreateSupportRequest(SupportRequest supportRequest)
-{
-    if (supportRequest == null)
-    {
-        return BadRequest("SupportRequest cannot be null.");
-    }
+        [HttpPost]
+        public async Task<ActionResult<SupportRequest>> CreateSupportRequest(SupportRequest supportRequest)
+        {
+            if (supportRequest == null)
+            {
+                return BadRequest("SupportRequest cannot be null.");
+            }
 
-    // UserId'nin boş olup olmadığını kontrol et
-    if (supportRequest.user_id == null || supportRequest.user_id == 0)
-    {
-        return BadRequest("UserId is required.");
-    }
+            // UserId'nin boş olup olmadığını kontrol et
+            if (supportRequest.user_id == 0)
+            {
+                return BadRequest("UserId is required.");
+            }
 
-    // Kullanıcı var mı kontrolü yapılabilir
-    var user = await _context.Users.FindAsync(supportRequest.user_id);
-    if (user == null)
-    {
-        return BadRequest("User not found.");
-    }
+            // Kullanıcı var mı kontrolü yapılabilir
+            var user = await _context.Users.FindAsync(supportRequest.user_id);
+            if (user == null)
+            {
+                return BadRequest("User not found.");
+            }
 
-    _context.SupportRequests.Add(supportRequest);
-    await _context.SaveChangesAsync();
+            // Kullanıcının mevcut Pending durumundaki destek taleplerini kontrol et
+            var pendingRequestsCount = await _context.SupportRequests
+                .Where(sr => sr.user_id == supportRequest.user_id && sr.status == "Pending")
+                .CountAsync();
 
-    return CreatedAtAction(nameof(GetSupportRequest), new { id = supportRequest.id }, supportRequest);
-}
+            if (pendingRequestsCount >= 5)
+            {
+                return BadRequest("You cannot have more than 5 pending support requests.");
+            }
+
+            // Destek talebini ekle
+            _context.SupportRequests.Add(supportRequest);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetSupportRequest), new { id = supportRequest.id }, supportRequest);
+        }
+
 
 
         // PUT: api/SupportRequests/{id}

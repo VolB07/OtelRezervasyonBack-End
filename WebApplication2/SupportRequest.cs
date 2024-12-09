@@ -30,6 +30,10 @@ public class SupportRequest
     public DateTime created_at { get; set; } = DateTime.UtcNow;
     public DateTime updated_at { get; set; } = DateTime.UtcNow;
 
+    [Required]
+    [StringLength(50)]
+    public string status { get; set; } = "Pending"; // Varsayılan değer 'Pending'
+
     [JsonIgnore]
     public virtual Users? User { get; set; }  // Kullanıcıyı JSON çıktısından dışla
 }
