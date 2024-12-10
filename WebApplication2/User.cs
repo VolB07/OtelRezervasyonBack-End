@@ -21,4 +21,9 @@ public class Users
 
     [JsonIgnore]
     public virtual ICollection<SupportRequest> SupportRequests { get; set; }
+
+    // Yeni Role sütunu
+    [Required]
+    [MaxLength(50)]
+    public string role { get; set; } = "user"; // Varsayılan rol "user"
 }

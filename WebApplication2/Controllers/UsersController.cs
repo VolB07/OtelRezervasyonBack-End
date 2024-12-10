@@ -75,8 +75,16 @@ public class UsersController : ControllerBase
                 return Unauthorized(new { message = "Geçersiz e-posta veya şifre." });
             }
 
-            // Kullanıcı bilgilerini al (örneğin, kullanıcı ID'si)
+            // Kullanıcı bilgilerini al (örneğin, kullanıcı ID'si ve rolü)
             var user = _userService.GetUserByEmail(loginModel.Email);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "Kullanıcı bulunamadı." });
+            }
+
+            // Kullanıcının rolü
+            var role = user.role;
 
             // JWT token oluştur
             var token = _userService.GenerateJwtToken(loginModel.Email);
@@ -85,7 +93,8 @@ public class UsersController : ControllerBase
             {
                 message = "Giriş başarılı.",
                 token = token,
-                userId = user?.id // Kullanıcı ID'sini yanıtla birlikte gönder
+                userId = user.id,
+                role = role // Rol bilgisi yanıt içerisinde gönderiliyor
             });
         }
         catch (Exception ex)
@@ -94,6 +103,7 @@ public class UsersController : ControllerBase
             return StatusCode(500, new { message = "Sunucu hatası, lütfen tekrar deneyin." });
         }
     }
+
 
 
 
@@ -118,6 +128,32 @@ public class UsersController : ControllerBase
 
         return Ok(user);
     }
+
+    // GET: api/users/role/{id}
+    [HttpGet("role/{id}")]
+    public async Task<IActionResult> GetUserRole(int id)
+    {
+        try
+        {
+            // Kullanıcıyı ID'ye göre veritabanında bul
+            var user = await _context.Users.FindAsync(id);
+
+            // Kullanıcı bulunamazsa hata mesajı döndür
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            // Kullanıcı rolünü döndür
+            return Ok(new { role = user.role });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return StatusCode(500, new { message = "Server error, please try again later." });
+        }
+    }
+
 }
 
 
