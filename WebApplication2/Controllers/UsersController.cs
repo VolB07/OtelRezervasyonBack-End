@@ -154,6 +154,24 @@ public class UsersController : ControllerBase
         }
     }
 
+    // PUT: api/Users/role/{id}
+    [HttpPut("role/{id}")]
+    public IActionResult AssignRoleToUser(int id, [FromBody] string role)
+    {
+        var user = _context.Users.Find(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        user.role = role; // Rolü string olarak atama
+        _context.SaveChanges();
+        return Ok();
+    }
+
+
+
+
 }
 
 

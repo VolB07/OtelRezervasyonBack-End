@@ -25,6 +25,8 @@ public class ApplicationDbContext : DbContext
             .HasIndex(u => u.email)
             .IsUnique();
 
+
+
         // Hotels tablosu yapılandırması
         modelBuilder.Entity<Hotels>().HasKey(h => h.id);
         modelBuilder.Entity<Hotels>().ToTable("hotels");
