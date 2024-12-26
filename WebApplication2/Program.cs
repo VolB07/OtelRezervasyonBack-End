@@ -26,7 +26,11 @@ builder.Services.AddCors(options =>
 });
 
 // Controller hizmetlerini ekleyin
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 // Swagger/OpenAPI yapýlandýrmasý
 builder.Services.AddEndpointsApiExplorer();

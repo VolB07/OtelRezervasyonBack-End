@@ -2,6 +2,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using WebApplication2;
+using WebApplication2.Models; 
+
 
 public class Users
 {
@@ -21,6 +23,8 @@ public class Users
 
     [JsonIgnore]
     public virtual ICollection<SupportRequest> SupportRequests { get; set; }
+    public ICollection<reservations> reservations { get; set; }
+
 
     // Yeni Role sütunu
     [Required]

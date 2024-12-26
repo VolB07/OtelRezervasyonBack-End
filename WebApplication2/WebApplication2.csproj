@@ -7,10 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\DishesController.cs" />
+    <Compile Remove="Controllers\EmployeesController.cs" />
+    <Compile Remove="Controllers\MaterialsController.cs" />
+    <Compile Remove="Controllers\StockController.cs" />
     <Compile Remove="Controllers\UserLoginDto.cs" />
     <Compile Remove="Controllers\UserLoginDto1.cs" />
     <Compile Remove="Controllers\WeatherForecastController.cs" />
     <Compile Remove="Controllers\YourDbContext.cs" />
+    <Compile Remove="Dish.cs" />
+    <Compile Remove="DishMaterial.cs" />
+    <Compile Remove="Material.cs" />
+    <Compile Remove="StockConsumption.cs" />
+    <Compile Remove="StockLog.cs" />
     <Compile Remove="UserService.cs" />
     <Compile Remove="WeatherForecast.cs" />
   </ItemGroup>

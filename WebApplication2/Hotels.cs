@@ -37,5 +37,13 @@ namespace WebApplication2
         public DateTime updated_at { get; set; } =  DateTime.UtcNow;
 
         public bool deleted { get; set; } = false;
+
+        [Required]
+        public int user_id { get; set; }
+
+        [ForeignKey(nameof(user_id))]
+        public Users? User { get; set; } // Navigation property
+
+
     }
 }
